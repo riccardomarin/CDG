@@ -49,7 +49,6 @@ model = Sequential(Conv3d(1, 64, 3), #input 30x30x30 -> 28 x 28 x 28
                    Linear(15 * 15 *15 * 64,10),
                    torch.nn.Softmax()
                    ).cuda()
-model.cuda()
 
 ################ Training
 loss_history = []
