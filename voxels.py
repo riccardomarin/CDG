@@ -144,24 +144,26 @@ def voxelize(pc, res, bounds=(-1., 1.), save_path=None):
 
 import glob
 files = glob.glob('/home/ubutnu/Documents/Projects/CorsoDeep/faust_ply/*.ply')
+files.sort()
 
 voxels_list = []
+res = 64
 for f in files:
   o = o3d.io.read_point_cloud(f)
-  voxels = voxelize(np.asarray(o.points), 64)
-  voxels = voxels.reshape((64,64,64))  
+  voxels = voxelize(np.asarray(o.points), res)
+  voxels = voxels.reshape((res,res,res))  
   voxels_list.append(voxels[np.newaxis,:,:,:])
    
 vox_faust = np.vstack(voxels_list)
-np.save('vox_faust_64.npy',vox_faust)
-
+np.save('vox_faust_' + str(res) +'.npy',vox_faust)
+np.save('names_' + str(res) +'.npy',files)
 
 
 ############# FAUST 30 ###############
 
 vox_faust = np.load('vox_faust_30.npy')
 ax = plt.figure().add_subplot(projection='3d')
-ax.voxels(vox_faust[4])
+ax.voxels(vox_faust[10])
 plt.show()  
   
 
@@ -271,7 +273,8 @@ plt.show()
 avg_per_class_acc = np.mean(np.diagonal(conf) / np.sum(conf, axis=1))
 print('Confusion matrix:\n{}'.format(conf))
 
-
+accuracy = torch.sum((Y_test_pred - Y_test)==0)/len(Y_test_pred)
+print ('accuracy: ' + str(np.asarray(accuracy)))
   
   
   
@@ -279,7 +282,7 @@ print('Confusion matrix:\n{}'.format(conf))
 
 vox_faust = np.load('vox_faust_64.npy')
 ax = plt.figure().add_subplot(projection='3d')
-ax.voxels(vox_faust[4])
+ax.voxels(vox_faust[10])
 plt.show()  
   
 
@@ -315,18 +318,16 @@ random_idxs = np.squeeze(random.sample(range(100),80))
 # poses_test = IDs[[x for x in np.arange(100) if x not in random_idxs]]
 
 
-model = Sequential(Conv3d(1, 8, 3), #input 64x64x64 -> 62 x 62 x 62
+model = Sequential(Conv3d(1, 16, 3),   #input 64x64x64 -> 62 x 62 x 62
                    torch.nn.ReLU(),
-                   Conv3d(8, 8, 5),  #input  -> 58 x 58 x 58
+                   Conv3d(16, 16, 5),  #input  -> 58 x 58 x 58
                    torch.nn.ReLU(),
-                   Conv3d(8, 16, 10), #input  -> 49 x 49 x 49
+                   Conv3d(16, 32, 10), #input  -> 49 x 49 x 49
                    torch.nn.ReLU(),
-                   Conv3d(16, 16, 10), #input  -> 40 x 40 x 40
-                   torch.nn.ReLU(),
-                   Conv3d(16, 16, 20), #input  -> 21 x 21 x 21
+                   Conv3d(32, 64, 20), #input  -> 30 x 30 x 30
                    torch.nn.ReLU(),
                    Flatten(),
-                   Linear(21 * 21 * 21 * 16,10),
+                   Linear(30 * 30 * 30 * 64,10),
                    torch.nn.Softmax()
                    ).cuda()
 
@@ -335,11 +336,11 @@ model = Sequential(Conv3d(1, 8, 3), #input 64x64x64 -> 62 x 62 x 62
 loss_history = []
 
 loss = nn.MSELoss() #define the loss function
-opt = SGD(model.parameters() , lr = 0.004) #define the gradient descent with learning rate as 0.001
+opt = SGD(model.parameters() , lr = 0.03) #define the gradient descent with learning rate as 0.001
 
 start = time.time()
 
-for k in range(40):
+for k in range(50):
   print(k)
   loss_epoch = []
   for x,y in tqdm.tqdm(zip(X, Y)):
@@ -351,6 +352,7 @@ for k in range(40):
     opt.step() 
     loss_epoch.append(loss_value.detach().cpu().numpy())
   loss_history.append(np.sum(loss_epoch))
+  print('Loss: ' + str(np.sum(loss_epoch)))
 end = time.time()
 
 plt.plot(loss_history)
