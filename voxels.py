@@ -318,16 +318,16 @@ random_idxs = np.squeeze(random.sample(range(100),80))
 # poses_test = IDs[[x for x in np.arange(100) if x not in random_idxs]]
 
 
-model = Sequential(Conv3d(1, 16, 3),   #input 64x64x64 -> 62 x 62 x 62
+model = Sequential(Conv3d(1, 4, 3),   #input 64x64x64 -> 62 x 62 x 62
                    torch.nn.ReLU(),
-                   Conv3d(16, 16, 5),  #input  -> 58 x 58 x 58
+                   Conv3d(4, 8, 5),  #input  -> 58 x 58 x 58
                    torch.nn.ReLU(),
-                   Conv3d(16, 32, 10), #input  -> 49 x 49 x 49
+                   Conv3d(8, 32, 10), #input  -> 49 x 49 x 49
                    torch.nn.ReLU(),
-                   Conv3d(32, 64, 20), #input  -> 30 x 30 x 30
+                   Conv3d(32, 32, 20), #input  -> 30 x 30 x 30
                    torch.nn.ReLU(),
                    Flatten(),
-                   Linear(30 * 30 * 30 * 64,10),
+                   Linear(30 * 30 * 30 * 32,10),
                    torch.nn.Softmax()
                    ).cuda()
 
