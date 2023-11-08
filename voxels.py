@@ -336,7 +336,7 @@ model = Sequential(Conv3d(1, 4, 3),   #input 64x64x64 -> 62 x 62 x 62
 loss_history = []
 
 loss = nn.MSELoss() #define the loss function
-opt = SGD(model.parameters() , lr = 0.03) #define the gradient descent with learning rate as 0.001
+opt = SGD(model.parameters() , lr = 0.01) #define the gradient descent with learning rate as 0.001
 
 start = time.time()
 

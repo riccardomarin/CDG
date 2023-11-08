@@ -175,7 +175,16 @@ plt.show()
 
 
 
+
+
+
+
+
+
+
 ##########
+
+
 
 
 vox_faust = np.load('vox_faust_30.npy')
